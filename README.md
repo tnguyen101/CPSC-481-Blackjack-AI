@@ -114,7 +114,7 @@ Noah Yarbough, <br>
 ## Top Contributors
 
 <a href="https://github.com/tnguyen101/CPSC-481-Blackjack-AI/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tnguyen101/CPSC-481-Blackjack-AI" alt="contrib.rocks image" />
+  <img src="https://contrib.rocks/image?repo=tnguyen101/CPSC-481-Blackjack-AI" />
 </a>
 
 <!-- MARKDOWN LINKS & IMAGES -->

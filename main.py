@@ -14,9 +14,8 @@ class BlackjackUI:
         self.running_count = 0
         self.init_deck()
         
-        # Icon if we have one??
         try:
-            self.master.iconbitmap("card_icon.ico")
+            self.master.iconbitmap("img/playing_cards.ico")
         except:
             pass
             
