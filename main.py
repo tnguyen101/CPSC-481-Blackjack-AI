@@ -15,7 +15,7 @@ class BlackjackUI:
         self.init_deck()
         
         try:
-            self.master.iconbitmap("img/playing_cards.ico")
+            self.master.iconbitmap("img/playing_cards.ico") 
         except:
             pass
             
