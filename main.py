@@ -71,6 +71,16 @@ class BlackjackUI:
                                      bg="gold", fg="#006400", font=("Helvetica", 14, "bold"), width=12,
                                      relief=tk.RAISED, borderwidth=3)
         self.stand_button.grid(row=0, column=2, padx=10)
+
+        self.double_button = tk.Button(self.buttons_frame, text="Double Down", command=self.double_down, state=tk.DISABLED, 
+                                     bg="gold", fg="#006400", font=("Helvetica", 14, "bold"), width=12,
+                                     relief=tk.RAISED, borderwidth=3)
+        self.double_button.grid(row=1, column=0, padx=10, pady=10)
+
+        self.surrender_button = tk.Button(self.buttons_frame, text="Surrender", command=self.surrender, state=tk.DISABLED, 
+                                        bg="gold", fg="#006400", font=("Helvetica", 14, "bold"), width=12,
+                                        relief=tk.RAISED, borderwidth=3)
+        self.surrender_button.grid(row=1, column=1, padx=10, pady=10)
         
         self.status_bar = tk.Label(self.master, text="Welcome to Blackjack AI! Press 'Start Game' to begin.", 
                                   bd=1, relief=tk.SUNKEN, anchor=tk.W, bg="#004d00", fg="white")
@@ -126,6 +136,8 @@ class BlackjackUI:
         self.update_display()
         self.hit_button['state'] = tk.NORMAL
         self.stand_button['state'] = tk.NORMAL
+        self.double_button['state'] = tk.NORMAL
+        self.surrender_button['state'] = tk.NORMAL
         self.ai_decide()
         self.status_bar.config(text="Game started! Your move...")
 
@@ -184,6 +196,12 @@ class BlackjackUI:
         dealer_card = self.dealer_hand[0][1]
         current_state = [player_sum, hand_is_pair, usable_ace, dealer_card, self.running_count]
         action = predict_action_from(current_state, model)
+
+        # diables double down and surrender if not on initial hand
+        if len(self.player_hand) > 2:
+            self.double_button['state'] = tk.DISABLED
+            self.surrender_button['state'] = tk.DISABLED
+
         self.ai_decision.config(text=f"AI Recommendation: {action}")
 
     def hit(self):
@@ -225,6 +243,36 @@ class BlackjackUI:
             result = "It's a tie!"
             
         messagebox.showinfo("Game Over", result)
+        self.reset_game()
+
+    def double_down(self):
+        if len(self.player_hand) != 2:
+            messagebox.showinfo("Invalid Move", "Double down is only allowed on your first two cards!")
+            return
+            
+        self.player_hand.append(self.draw_card())
+        self.update_display()
+        
+        player_sum = self.calculate_hand_value(self.player_hand)
+        self.status_bar.config(text=f"You doubled down! Your bet is doubled and your total is now {player_sum}.")
+        
+        if player_sum > 21:
+            self.display_cards(self.dealer_hand, self.dealer_cards_frame, show_all=True)
+            self.dealer_score.config(text=f"Score: {self.calculate_hand_value(self.dealer_hand)}")
+            messagebox.showinfo("Game Over", "Player busts! AI wins.")
+            self.reset_game()
+        else:
+            self.stand()
+            
+    def surrender(self):
+        if len(self.player_hand) != 2:
+            messagebox.showinfo("Invalid Move", "Surrender is only allowed on your first two cards!")
+            return
+
+        self.display_cards(self.dealer_hand, self.dealer_cards_frame, show_all=True)
+        self.dealer_score.config(text=f"Score: {self.calculate_hand_value(self.dealer_hand)}")
+
+        messagebox.showinfo("Game Over", "You surrendered! Half your bet is returned.")
         self.reset_game()
 
     def reset_game(self):
