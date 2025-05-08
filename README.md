@@ -44,20 +44,23 @@ Users will be able to use the following program to play BlackJack in the presenc
 
 ## Getting Started
 
-## Dependencies
-
-#### Note:
-This program was made using python
-The program was designed be openned from the command line
-
-## Executing program
-
 #### Start by cloning the repository
 ```
 git clone https://github.com/tnguyen101/CPSC-481-Blackjack-AI
 ```
+
+## Dependencies
+None
+
+#### Note:
+This program was made using Python.
+The program was designed be opened from a command line.
+
+## Executing program
+
+#### 1. Set your directory within the repository files
  
-#### Type the following in the commandline
+#### 2. Type the following in the commandline
 ```
 python main.py
 ```
