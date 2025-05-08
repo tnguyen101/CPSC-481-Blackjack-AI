@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import random
 from PIL import Image, ImageTk
+from blackjack_predictor import load_model, predict_action_from
 import os
 
 class BlackjackUI:
@@ -10,6 +11,8 @@ class BlackjackUI:
         self.master.title("Blackjack AI")
         self.master.geometry("700x500")
         self.master.configure(bg="#006400")
+        self.running_count = 0
+        self.init_deck()
         
         # Icon if we have one??
         try:
@@ -68,6 +71,16 @@ class BlackjackUI:
                                      bg="gold", fg="#006400", font=("Helvetica", 14, "bold"), width=12,
                                      relief=tk.RAISED, borderwidth=3)
         self.stand_button.grid(row=0, column=2, padx=10)
+
+        self.double_button = tk.Button(self.buttons_frame, text="Double Down", command=self.double_down, state=tk.DISABLED, 
+                                     bg="gold", fg="#006400", font=("Helvetica", 14, "bold"), width=12,
+                                     relief=tk.RAISED, borderwidth=3)
+        self.double_button.grid(row=1, column=0, padx=10, pady=10)
+
+        self.surrender_button = tk.Button(self.buttons_frame, text="Surrender", command=self.surrender, state=tk.DISABLED, 
+                                        bg="gold", fg="#006400", font=("Helvetica", 14, "bold"), width=12,
+                                        relief=tk.RAISED, borderwidth=3)
+        self.surrender_button.grid(row=1, column=1, padx=10, pady=10)
         
         self.status_bar = tk.Label(self.master, text="Welcome to Blackjack AI! Press 'Start Game' to begin.", 
                                   bd=1, relief=tk.SUNKEN, anchor=tk.W, bg="#004d00", fg="white")
@@ -112,7 +125,7 @@ class BlackjackUI:
                 card_label = tk.Label(frame, image=self.default_card, bg="#006400")
                 card_label.image = self.default_card
                 
-                value_label = tk.Label(card_label, text=str(card), bg="#aa0000", fg="white", font=("Helvetica", 24, "bold"))
+                value_label = tk.Label(card_label, text=str(card[0]), bg="#aa0000", fg="white", font=("Helvetica", 24, "bold"))
                 value_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
                 
             card_label.pack(side=tk.LEFT, padx=5)
@@ -123,59 +136,102 @@ class BlackjackUI:
         self.update_display()
         self.hit_button['state'] = tk.NORMAL
         self.stand_button['state'] = tk.NORMAL
+        self.double_button['state'] = tk.NORMAL
+        self.surrender_button['state'] = tk.NORMAL
         self.ai_decide()
         self.status_bar.config(text="Game started! Your move...")
 
+    def init_deck(self):
+        self.deck = []
+        for _ in range(4):  # 4 suits
+            for val in range(1, 14):
+                self.deck.append(val)
+        random.shuffle(self.deck)
+        
+    def calculate_hand_value(self, hand):
+        total = sum(card[1] for card in hand)
+        aces = sum(1 for card in hand if card[0] == "A")
+        
+        while total > 21 and aces:
+            total -= 10
+            aces -= 1
+        
+        return total
+
     def draw_card(self):
-        value = random.randint(1, 13)
-        if value > 10:
-            return 10
-        return value
+        if not self.deck:
+            self.init_deck()
+
+        card = self.deck.pop()
+
+        # update running count
+        if 2 <= card <= 6:
+            self.running_count += 1
+        elif card >= 10 or card == 1:
+            self.running_count -= 1
+
+        if card == 1:
+            return ("A", 11)
+        elif card == 11:
+            return ("J", 10)
+        elif card == 12:
+            return ("Q", 10)
+        elif card == 13:
+            return ("K", 10)
+        else:
+            return (str(card), card)
 
     def update_display(self):
         self.display_cards(self.player_hand, self.player_cards_frame)
-        self.player_score.config(text=f"Score: {sum(self.player_hand)}")
+        self.player_score.config(text=f"Score: {self.calculate_hand_value(self.player_hand)}")
         
         self.display_cards(self.dealer_hand, self.dealer_cards_frame, show_all=False)
-        self.dealer_score.config(text=f"Score: {self.dealer_hand[0]} + ?")
+        self.dealer_score.config(text=f"Score: {self.dealer_hand[0][1]} + ?")
 
     def ai_decide(self):
-        player_sum = sum(self.player_hand)
-        if player_sum < 17:
-            decision = "Hit"
-            explanation = "(Your total is below 17)"
-        else:
-            decision = "Stand"
-            explanation = "(Your total is 17 or higher)"
-        self.ai_decision.config(text=f"AI Recommendation: {decision} {explanation}")
+        model = load_model()
+        player_sum = self.calculate_hand_value(self.player_hand)
+        hand_is_pair = int(len(self.player_hand) == 2 and self.player_hand[0][1] == self.player_hand[1][1])
+        usable_ace = int(any(card[0] == "A" for card in self.player_hand) and player_sum <= 21)
+        dealer_card = self.dealer_hand[0][1]
+        current_state = [player_sum, hand_is_pair, usable_ace, dealer_card, self.running_count]
+        action = predict_action_from(current_state, model)
+
+        # diables double down and surrender if not on initial hand
+        if len(self.player_hand) > 2:
+            self.double_button['state'] = tk.DISABLED
+            self.surrender_button['state'] = tk.DISABLED
+
+        self.ai_decision.config(text=f"AI Recommendation: {action}")
 
     def hit(self):
         self.player_hand.append(self.draw_card())
         self.update_display()
         self.ai_decide()
         
-        player_sum = sum(self.player_hand)
+        player_sum = self.calculate_hand_value(self.player_hand)
         self.status_bar.config(text=f"You drew a card. Your total is now {player_sum}.")
         
         if player_sum > 21:
             self.display_cards(self.dealer_hand, self.dealer_cards_frame, show_all=True)
-            self.dealer_score.config(text=f"Score: {sum(self.dealer_hand)}")
+            self.dealer_score.config(text=f"Score: {self.calculate_hand_value(self.dealer_hand)}")
             messagebox.showinfo("Game Over", "Player busts! AI wins.")
             self.reset_game()
 
     def stand(self):
         self.display_cards(self.dealer_hand, self.dealer_cards_frame, show_all=True)
-        self.dealer_score.config(text=f"Score: {sum(self.dealer_hand)}")
+        self.dealer_score.config(text=f"Score: {self.calculate_hand_value(self.dealer_hand)}")
         
-        while sum(self.dealer_hand) < 17:
+        while self.calculate_hand_value(self.dealer_hand) < 17:
             self.dealer_hand.append(self.draw_card())
             self.display_cards(self.dealer_hand, self.dealer_cards_frame, show_all=True)
-            self.dealer_score.config(text=f"Score: {sum(self.dealer_hand)}")
+            self.dealer_score.config(text=f"Score: {self.calculate_hand_value(self.dealer_hand)}")
             self.master.update()
             self.master.after(500)
         
-        player_sum = sum(self.player_hand)
-        dealer_sum = sum(self.dealer_hand)
+        player_sum = self.calculate_hand_value(self.player_hand)
+        dealer_sum = self.calculate_hand_value(self.dealer_hand)
+
         
         if dealer_sum > 21:
             result = "Dealer busts! Player wins!"
@@ -187,6 +243,36 @@ class BlackjackUI:
             result = "It's a tie!"
             
         messagebox.showinfo("Game Over", result)
+        self.reset_game()
+
+    def double_down(self):
+        if len(self.player_hand) != 2:
+            messagebox.showinfo("Invalid Move", "Double down is only allowed on your first two cards!")
+            return
+            
+        self.player_hand.append(self.draw_card())
+        self.update_display()
+        
+        player_sum = self.calculate_hand_value(self.player_hand)
+        self.status_bar.config(text=f"You doubled down! Your bet is doubled and your total is now {player_sum}.")
+        
+        if player_sum > 21:
+            self.display_cards(self.dealer_hand, self.dealer_cards_frame, show_all=True)
+            self.dealer_score.config(text=f"Score: {self.calculate_hand_value(self.dealer_hand)}")
+            messagebox.showinfo("Game Over", "Player busts! AI wins.")
+            self.reset_game()
+        else:
+            self.stand()
+            
+    def surrender(self):
+        if len(self.player_hand) != 2:
+            messagebox.showinfo("Invalid Move", "Surrender is only allowed on your first two cards!")
+            return
+
+        self.display_cards(self.dealer_hand, self.dealer_cards_frame, show_all=True)
+        self.dealer_score.config(text=f"Score: {self.calculate_hand_value(self.dealer_hand)}")
+
+        messagebox.showinfo("Game Over", "You surrendered! Half your bet is returned.")
         self.reset_game()
 
     def reset_game(self):
