@@ -87,32 +87,28 @@ Arturo Flores, <br>
     Department of Computer Science <br>
 &ensp;&ensp;&ensp;&ensp; 
     California State University, Fullerton<br>
-&ensp;&ensp;&ensp;&ensp; 
-    arturof033@csu.fullerton.edu <br>
+&ensp;&ensp;&ensp;&ensp;  <br>
 
 Travis Nguyen, <br>
 &ensp;&ensp;&ensp;&ensp; 
     Department of Computer Science <br>
 &ensp;&ensp;&ensp;&ensp; 
     California State University, Fullerton<br>
-&ensp;&ensp;&ensp;&ensp; 
-    insert@csu.fullerton.edu <br>
+&ensp;&ensp;&ensp;&ensp;  <br>
 
 Johnny Nguyen, <br>
 &ensp;&ensp;&ensp;&ensp; 
     Department of Computer Science <br>
 &ensp;&ensp;&ensp;&ensp; 
     California State University, Fullerton <br> 
-&ensp;&ensp;&ensp;&ensp; 
-    insert@csu.fullerton.edu <br>
+&ensp;&ensp;&ensp;&ensp; <br>
 
 Noah Yarbough, <br>
 &ensp;&ensp;&ensp;&ensp; 
     Department of Computer Science <br>
 &ensp;&ensp;&ensp;&ensp; 
     California State University, Fullerton <br>
-&ensp;&ensp;&ensp;&ensp; 
-    insert@csu.fullerton.edu <br>
+&ensp;&ensp;&ensp;&ensp; <br>
 
 
 ## Top Contributors
