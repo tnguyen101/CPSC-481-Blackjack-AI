@@ -179,7 +179,6 @@ class BlackjackUI:
     def ai_decide(self):
         model = load_model()
         player_sum = self.calculate_hand_value(self.player_hand)
-        print(player_sum)
         hand_is_pair = int(len(self.player_hand) == 2 and self.player_hand[0][1] == self.player_hand[1][1])
         usable_ace = int(any(card[0] == "A" for card in self.player_hand) and player_sum <= 21)
         dealer_card = self.dealer_hand[0][1]
