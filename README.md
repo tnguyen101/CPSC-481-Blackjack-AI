@@ -73,13 +73,16 @@ The project folder structure is organized as follows:
 
 ```
 CPSC-481-BlackJack-AI/
-├── model_building/                             # Files that contributed to building the model
-│   ├── blackjack_dataset.csv/                  # Dataset used to train the model
-│   ├── blackjack_dataset_creation.py/          # Program to create synthetic data 
-│   ├── blackjack_model_creation.py/            # Program to creat the pytorch model
-├── blackjack_model.pth/                        # Pytorch Model
-├── blackjack_predictor.py/                     # Import module to use the pytorch model
-├── main.py/                                    # Images and icons used in the project
+├── img
+├── model_building/
+│   ├── blackjack_dataset.csv/
+│   ├── blackjack_dataset_creation.py/
+│   ├── blackjack_model_creation.py/
+│   ├── game_simulations.py/          
+├── README.md
+├── blackjack_model.pth/
+├── blackjack_predictor.py/
+├── main.py/
 
 ```
 
